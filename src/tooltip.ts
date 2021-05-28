@@ -119,11 +119,18 @@ export class StatusmapTooltip {
       return;
     }
 
-    let timestamp = bucket.to;
+    //SPLICE - We want to display the from time
+    //SPLICE TODO: create option to make this configurable
+    //let timestamp = bucket.to;
+    let timestamp = bucket.from + 1000;
     let yLabel = bucket.yLabel;
     let pLabels = bucket.pLabels;
     let value = bucket.value;
     let values = bucket.values;
+    //SPLICE - We want to display the from time
+    let from = bucket.from + 1000;
+    let to = bucket.to;
+
     // TODO create option for this formatting.
     let tooltipTimeFormat = 'YYYY-MM-DD HH:mm:ss';
     let time: Date = this.dashboard.formatDate(+timestamp, tooltipTimeFormat);
@@ -148,15 +155,21 @@ export class StatusmapTooltip {
         statuses = this.panelCtrl.discreteExtraSeries.convertValuesToTooltips(values);
       }
 
+      //SPLICE TODO - Make this configurable
+      let showStatus = false;
       let statusTitle = 'status:';
       if (statuses.length > 1) {
         statusTitle = 'statuses:';
       }
       tooltipHtml += `
       <div>
-        name: <b>${yLabel}</b>
-        <br>
-        <span>${statusTitle}</span>
+        name: <b>${yLabel}</b>`;
+      if (showStatus) {
+        tooltipHtml += `<br>
+          <span>${statusTitle}</span>`;
+      }
+
+      tooltipHtml += `
         <ul>
           ${_.join(
             _.map(
@@ -206,6 +219,10 @@ export class StatusmapTooltip {
       scopedVars['__y_label_trim'] = { value: yLabel.trim() };
       // Grafana 7.0 compatible
       scopedVars['__url_time_range'] = { value: this.panelCtrl.retrieveTimeVar() };
+
+      //SPLICE - We want to create links for a specific bucket
+      scopedVars['__bucketTo'] = { value: to };
+      scopedVars['__bucketFrom'] = { value: from };
 
       //New vars based on partialLabels:
       for (let i in pLabels) {
